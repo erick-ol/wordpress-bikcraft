@@ -12,6 +12,7 @@ p {
 
 img {
   display: block;
+  max-width: 100%;
 }
 
 .btn {
@@ -273,14 +274,14 @@ img {
 
 .qualidade:after {
   content: "";
-  width: 634px;
-  height: 83px;
-  display: block;
-  background: url(../img/linhas.svg) no-repeat center;
-  position: absolute;
-  top: 209px;
-  left: 164px;
-  z-index: -1;
+	width: 634px;
+	height: 83px;
+	display: block;
+	background: url("../img/linhas.svg") no-repeat center;
+	position: absolute;
+	top: 209px;
+	right: 162px;
+	z-index: -1;
 }
 
 .qualidade img{
