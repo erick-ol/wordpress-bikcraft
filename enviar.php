@@ -1,97 +1,101 @@
 <?php
-  
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
-require "./PHPMailer/src/Exception.php";
-require "./PHPMailer/src/PHPMailer.php";
-require "./PHPMailer/src/SMTP.php";
-  
 // Mudar Aqui o e-mail
-$email_envio = ""; // E-mail do site (ex: contato@seusite.com)
-$email_pass = ""; // Senha do e-mail
 
-$site_name = "Bikcraft"; // Nome do Site
-$site_url = "www.bikcraft.com"; // URL do Site
+$email_envio = ''; // E-mail receptor
+$email_pass = ''; // Senha do e-mail
 
-$host_smtp = ""; // HOST SMTP Ex: smtp.domain.com.br
-$host_port = ""; // Porta do Host, geralmente 465 ou 587
+$site_name = ''; // Nome do Site
+$site_url = ''; // URL do Site
 
+$host_smtp = 'smtp.gmail.com'; // HOST SMTP Ex: smtp.domain.com.br
+$host_port = '465'; // Porta do Host
 
-// Não mudar abaixo:
-$email = $_POST["email"];
-$nome = $_POST["nome"];
+// Variáveis do Formulário
 
-// Loop por cada field do formulário
-$body_content = "";
-foreach( $_POST as $field => $value) {
-  if( $field !== "leaveblank" && $field !== "dontchange" && $field !== "enviar") {
-    $sanitize_value = filter_var($value, FILTER_SANITIZE_STRING);
-    $body_content .= "$field: $value \n";
-  }
+$nome = $_POST['nome'];
+$email = $_POST['email'];
+$telefone = $_POST['telefone'];
+$mensagem = $_POST['mensagem'];
+
+// Conteúdo do Formulário
+
+$body_content = "De: $nome \n E-mail: $email \n Telefone: $telefone \n Mensagem: $mensagem";
+
+// Não mudar a partir daqui
+
+if ($_POST['leaveblank'] != '' or $_POST['dontchange'] != 'http://') {
+
+  echo "<h2
+	style=\"
+	font-size: 1em;
+	margin-top: 20%;
+	text-align: center;
+	font-family: 'Helvetica', 'Arial', 'Sans-Serif';
+	font-weight: normal;
+	color: #1b1b1b;
+	\"><center><span>Aconteceu algum erro!</span><p>Você pode tentar denovo ou enviar direto para " . $email_envio . "!</p></center><h2>";
+	
+	echo "<html style=\"background: #fff;\"></html>";
+	echo "<meta HTTP-EQUIV='Refresh' CONTENT='10;URL=" . $site_url . "'>";
 }
 
-// Verifica se não é bot
-$notbot = ($_POST["leaveblank"] === "") || ($_POST["dontchange"] === "http://");
+else if (isset($_POST['nome'])){
 
-if ($notbot) {
+require ('./PHPMailer/PHPMailerAutoload.php');
 
-// Inicia o objeto PHPMailer
-$mail = new PHPMailer(true);
+$mail = new PHPMailer;
+$mail->CharSet = 'UTF-8';
 
-try {
-  $mail->CharSet = "UTF-8";
+$mail->isSMTP();
+$mail->Host = $host_smtp;
+$mail->SMTPAuth = true;
+$mail->Username = $email_envio;
+$mail->Password = $email_pass;
+$mail->Port = $host_port; 
+
+$mail->From = $email_envio;
+
+$mail->addAddress($email_envio);
+
+$mail->FromName = 'Formulário de Contato';
+$mail->AddReplyTo($_POST['email'], $_POST['nome']);
+
+$mail->WordWrap = 70;
+
+$mail->Subject = 'Formulário - ' . $site_name . ' - ' . $_POST['nome'];
+
+$mail->Body = $body_content;
+
+if(!$mail->send()) {
   
-  //$mail->SMTPDebug = 3; // Tire do comentário para debugar
-  $mail->isSMTP();
-  $mail->Host = $host_smtp;
-  $mail->SMTPAuth = true;
-  $mail->Username = $email_envio;
-  $mail->Password = $email_pass;
-  $mail->Port = $host_port; 
-  $mail->SMTPSecure = "tsl"; //Se não tiver SSL use assim, com SSL coloque no SMTPSecure
+  echo "<h2
+	style=\"
+	font-size: 1.5em;
+	margin-top: 20%;
+	text-align: center;
+	font-family: Inconsolata', 'Helvetica', 'Arial', 'sans-serif';
+	font-weight: normal;
+	color: #fdc64b;
+	\"><center><span>Aconteceu algum erro!</span><p>Você pode tentar denovo ou enviar direto para " . $email_envio . "!</p></center><h2>";
+	
+	echo "<html style=\"background: #fff;\"></html>";
+	echo "<meta HTTP-EQUIV='Refresh' CONTENT='10;URL=" . $site_url . "'>";
   
-  $mail->setFrom($email_envio, "Formulário - ". $nome);
-  $mail->addAddress($email_envio, $site_name);
-  $mail->addReplyTo($email, $nome);
-  
-  $mail->WordWrap = 70;
-  $mail->Subject = "Formulário - " . $site_name . " - " . $nome;
-  $mail->Body = $body_content;
-  
-  $mail->send();
-?>
+} else {
 
-  <html>
-    <head>
-      <title>Formulário enviado</title>
-      <meta http-equiv="refresh" content="10;URL="./"">
-    </head>
-    <body>
-      <!-- Mensagem de sucesso -->
-      <div class="form-content" id="form-send">
-        <h2>Formulário enviado!</h2>
-        <p>Em breve eu entro em contato com você.</p>
-      </div>
-    </body>
-  </html>
-
-<?php } catch (Exception $e) { ?>
-
-  <html>
-    <head>
-      <title>Erro no envio</title>
-      <meta http-equiv="refresh" content="10;URL="./"">
-    </head>
-    <body>
-      <!-- Mensagem de erro -->
-      <div class="form-content" id="form-erro">
-        <h2>Um erro ocorreu!</h2>
-        <p>Você pode tentar novamente ou enviar direto para <?php echo $email_envio; ?></p>
-      </div>
-    </body>
-  </html>
-
-<?php
-  }}
+  echo "<h2
+	style=\"
+	font-size: 1.5em;
+	margin-top: 20%;
+	text-align: center;
+	font-family: 'Inconsolata', 'Helvetica', 'Arial', 'sans-serif';
+	font-weight: normal;
+	color: #89bb50;
+	\"><center><span>Formulário Enviado</span><p>Em breve eu entro em contato com você. Abraços.</p></center><h2>";
+	
+	echo "<html style=\"background: #fff;\"></html>";
+	echo "<meta HTTP-EQUIV='Refresh' CONTENT='2;URL=" . $site_url . "'>";
+}
+}
 ?>
